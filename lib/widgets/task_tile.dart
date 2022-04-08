@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:todoey_flutter/user_settings.dart';
+import 'package:todoey_flutter/model/task_data.dart';
 
 class TaskTile extends StatelessWidget {
   final bool isChecked;
@@ -19,9 +21,10 @@ class TaskTile extends StatelessWidget {
       title: Text(taskTitle,
           style: TextStyle(
             decoration: isChecked ? TextDecoration.lineThrough : null,
+            fontSize: 20.0,
           )),
       trailing: Checkbox(
-        activeColor: Colors.lightBlueAccent,
+        activeColor: currentColor,
         value: isChecked,
         onChanged: checkboxCallback,
       ),

@@ -1,97 +1,161 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:todoey_flutter/model/task.dart';
+import 'dart:async';
+import 'package:flutter/widgets.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'package:todoey_flutter/model/page_sizes.dart';
+
+String titleLabel = 'Hello';
+String taskLabel = '';
+String pageSize = '';
+String printMethod = '';
+String colorCode = '';
+Color currentColor = Color(0xff3f7eb5);
+String printAllItems = '';
+String printTextColor = '';
+double left, top, right, bottom;
+String fontSelected = '';
 
 class TaskData extends ChangeNotifier {
   List<Task> tasks = [];
+  List<Task> tasksUnchecked = [];
 
   int get taskCount => tasks.length;
 
-  void addTask(String newTaskTitle) {
+  void addTask(String newTaskTitle) async {
     final task = Task(name: newTaskTitle);
     tasks.add(task);
     notifyListeners();
-    writeTextString();
-//    setPref();
+
+    // add taskItem to database
+    var taskItem = TaskItem(name: task.name, isDone: task.isDone ? 1 : 0);
+    await insertDatabaseItem(taskItem);
   }
 
-  void updateTask(Task task) {
+  void updateTask(Task task) async {
     task.isDone = !task.isDone;
     notifyListeners();
-    writeTextString();
+
+    // update taskItem to database
+    var taskItem = TaskItem(name: task.name, isDone: task.isDone ? 1 : 0);
+    await updateDatabaseItem(taskItem);
   }
 
-  void deleteTask(Task task) {
+  void deleteTask(Task task) async {
     tasks.remove(task);
     notifyListeners();
-    writeTextString();
+
+    // update taskItem to database
+    var taskItem = TaskItem(name: task.name, isDone: task.isDone ? 1 : 0);
+    await deleteDatabaseItem(taskItem);
   }
 
-  void getPref() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String savedList = (prefs.getString('saveList') ??
-        '[{"name":"rise and shine","isDone":false}]');
-    createList(savedList);
-    notifyListeners();
-  }
-
-  void createList(String text) {
-    List<TaskItem> jsonList = [];
-    jsonList =
-        (json.decode(text) as List).map((i) => TaskItem.fromJson(i)).toList();
+  Future<List<TaskItem>> listDatabaseItems() async {
+    // add spinner
+    Database db = await initiateDatabase();
+    final List<Map<String, dynamic>> maps = await db.query('tasks');
+    final tasksDatabase = List.generate(
+      maps.length,
+      (i) {
+        return TaskItem(
+          name: maps[i]['name'],
+          isDone: maps[i]['isDone'],
+        );
+      },
+    );
 
     tasks = [];
-    for (int i = 0; i < jsonList.length; i++) {
-      final task = Task(name: jsonList[i].name, isDone: jsonList[i].isDone);
+
+    for (int i = 0; i < tasksDatabase.length; i++) {
+      final task = Task(
+        name: tasksDatabase[i].name,
+        isDone: tasksDatabase[i].isDone == 0 ? (false) : (true),
+      );
       tasks.add(task);
     }
+
+    notifyListeners();
   }
 
-  void setPref() async {
+  Future<void> insertDatabaseItem(TaskItem taskItem) async {
+    Database db = await initiateDatabase();
+    await db.insert(
+      'tasks',
+      taskItem.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<Database> initiateDatabase() async {
+    final Future<Database> database = openDatabase(
+      join(await getDatabasesPath(), 'todoey_database.db'),
+      onCreate: (db, version) {
+        return db.execute(
+          "CREATE TABLE tasks(name TEXT, isDone INTEGER)",
+        );
+      },
+      version: 1,
+    );
+    final Database db = await database;
+    return db;
+  }
+
+  Future getSharedPreferences() async {
+    // get user preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String savedList = createJsonText();
-    await prefs.setString('saveList', savedList);
-    notifyListeners();
+    String userPreference = (prefs.getString('userPreference') ??
+        '{"titleName":"Today","taskName":"Tasks","pageSize":"4x6","printAllItems":"YES","fontSelected":"assets/ARIALUNI.TTF","printTextColor":"BLACK"}');
+    Map<String, dynamic> map = jsonDecode(userPreference);
+    titleLabel = map['titleName'];
+    taskLabel = map['taskName'];
+    pageSize = map['pageSize'];
+    printAllItems = map['printAllItems'];
+    fontSelected = map['fontSelected'];
+    printTextColor = map['printTextColor'];
   }
 
-  String createJsonText() {
-    List<TaskItem> jsonList = [];
-    for (int i = 0; i < tasks.length; i++) {
-      final task = TaskItem(name: tasks[i].name, isDone: tasks[i].isDone);
-      jsonList.add(task);
-    }
-    String savedList = jsonEncode(jsonList);
-    return savedList;
-  }
-
-  void readTextString() async {
+  Future getUserColor() async {
+    SharedPreferences prefsNew = await SharedPreferences.getInstance();
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/myToDoList.txt');
-      final String savedList = await file.readAsString();
-      createList(savedList);
-      print(savedList);
+      currentColor = Color(prefsNew.getInt('color'));
     } catch (e) {
-      String savedList = '[{"name":"get up and boogie","isDone":false}]';
-      print('cannot read file');
-      createList(savedList);
+      currentColor = Color(0xff3f7eb5);
     }
-    notifyListeners();
   }
 
-  void writeTextString() async {
+  Future getUserMargins() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/myToDoList.txt');
-      final String savedList = createJsonText();
-      await file.writeAsString(savedList);
-      print('saved');
+      left = prefs.getDouble('left') ?? 0.0;
+      top = prefs.getDouble('top') ?? 0.0;
+      right = prefs.getDouble('right') ?? 0.0;
+      bottom = prefs.getDouble('bottom') ?? 0.0;
     } catch (e) {
-      print('cannot save file');
+      left = top = right = bottom = 0.0;
     }
+  }
+
+  Future<void> updateDatabaseItem(TaskItem taskItem) async {
+    Database db = await initiateDatabase();
+
+    await db.update(
+      'tasks',
+      taskItem.toJson(),
+      where: "name = ?",
+      whereArgs: [taskItem.name],
+    );
+  }
+
+  Future<void> deleteDatabaseItem(TaskItem taskItem) async {
+    Database db = await initiateDatabase();
+
+    await db.delete(
+      'tasks',
+      where: "name = ?",
+      whereArgs: [taskItem.name],
+    );
   }
 }

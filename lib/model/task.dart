@@ -3,10 +3,6 @@ class Task {
   bool isDone;
 
   Task({this.name, this.isDone = false});
-
-//  void toggleDone() {
-//    isDone = !isDone;
-//  }
 }
 
 class TaskItem {
@@ -24,5 +20,10 @@ class TaskItem {
       'name': name,
       'isDone': isDone,
     };
+  }
+
+  @override
+  String toString() {
+    return 'Todo $name, $isDone';
   }
 }

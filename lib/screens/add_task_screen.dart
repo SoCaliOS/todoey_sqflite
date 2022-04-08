@@ -27,18 +27,23 @@ class AddTaskScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 30.0,
                 fontWeight: FontWeight.w700,
-                color: Colors.lightBlueAccent,
+                color: currentColor,
               ),
             ),
             TextField(
               textAlign: TextAlign.center,
               autofocus: true,
+              decoration: InputDecoration(
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: currentColor),
+                ),
+              ),
               onChanged: (newText) {
-                newTaskTitle = newText;
+                newTaskTitle = newText.trim();
               },
               onSubmitted: (newText) {
-                newTaskTitle = newText;
-                if (newTaskTitle.trim().length > 0) {
+                newTaskTitle = newText.trim();
+                if (newTaskTitle.length > 0) {
                   Provider.of<TaskData>(context, listen: false)
                       .addTask(newTaskTitle);
                 }
@@ -46,7 +51,7 @@ class AddTaskScreen extends StatelessWidget {
               },
             ),
             FlatButton(
-              color: Colors.lightBlueAccent,
+              color: currentColor,
               onPressed: () {
                 if (newTaskTitle != null) {
                   if (newTaskTitle.trim().length > 0) {
