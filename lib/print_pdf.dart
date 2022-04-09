@@ -105,7 +105,7 @@ class PrintPreview extends StatelessWidget {
         build: (context) {
           return pw.Expanded(
             child: pw.ListView.separated(
-              padding: pw.EdgeInsets.fromLTRB(left, top, right, bottom),
+              padding: pw.EdgeInsets.fromLTRB(left ?? 0, top ?? 0, right ?? 0, bottom ?? 0),
               itemCount: tasks.length,
               itemBuilder: (context, int index) {
                 return pw.Column(
@@ -139,7 +139,7 @@ class PrintPreview extends StatelessWidget {
     print(printMethod);
 
     if (printMethod == 'share') {
-      await Printing.sharePdf(bytes: pdf.save());
+      await Printing.sharePdf(bytes: await pdf.save());
     } else if (printMethod == 'direct') {
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => pdf.save(),
@@ -205,7 +205,7 @@ Future<Database> initiateDatabase() async {
 class Task {
   final String name;
 
-  Task({this.name});
+  Task({required this.name});
 
   @override
   String toString() {
@@ -217,7 +217,7 @@ class TaskItem {
   final String name;
   final dynamic isDone;
 
-  TaskItem({this.name, this.isDone});
+  TaskItem({required this.name, this.isDone});
 
   TaskItem.fromJson(Map<String, dynamic> json)
       : name = json['name'],

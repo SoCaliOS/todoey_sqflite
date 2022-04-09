@@ -5,14 +5,14 @@ import 'package:todoey_flutter/model/task_data.dart';
 class TaskTile extends StatelessWidget {
   final bool isChecked;
   final String taskTitle;
-  final Function checkboxCallback;
-  final Function longPressCallback;
+  final ValueChanged<bool?>? checkboxCallback;
+  final GestureLongPressCallback longPressCallback;
 
   TaskTile(
-      {this.isChecked,
-      this.taskTitle,
-      this.checkboxCallback,
-      this.longPressCallback});
+      { required this.isChecked,
+        required this.taskTitle,
+        required this.checkboxCallback,
+        required this.longPressCallback});
 
   @override
   Widget build(BuildContext context) {

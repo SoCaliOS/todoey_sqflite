@@ -2,14 +2,14 @@ class Task {
   final String name;
   bool isDone;
 
-  Task({this.name, this.isDone = false});
+  Task({required this.name, this.isDone = false});
 }
 
 class TaskItem {
   final String name;
   final dynamic isDone;
 
-  TaskItem({this.name, this.isDone});
+  TaskItem({required this.name, this.isDone});
 
   TaskItem.fromJson(Map<String, dynamic> json)
       : name = json['name'],
