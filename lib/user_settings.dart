@@ -30,8 +30,8 @@ class _UserSettingsState extends State<UserSettings> {
       items: dropdownItems,
       onChanged: (value) {
         setState(() {
-          selectedSize = value;
-          pageSize = value;
+          selectedSize = value ?? '';
+          pageSize = value ?? '';
           print(pageSize);
           setUserPref();
         });
@@ -99,16 +99,17 @@ class _UserSettingsState extends State<UserSettings> {
                   border: Border.all(color: Colors.blueAccent),
                 ),
                 child: ToggleSwitch(
+                  totalSwitches: 2,
                   initialLabelIndex: yesOrNo.indexOf(printAllItems),
                   minWidth: double.infinity,
                   cornerRadius: 0.0,
-                  activeBgColor: currentColor,
+                  activeBgColor: [currentColor],
                   activeFgColor: Colors.white,
                   inactiveBgColor: Colors.grey,
                   inactiveFgColor: Colors.black,
                   labels: ['YES', 'NO'],
                   onToggle: (index) {
-                    printAllItems = yesOrNo[index];
+                    printAllItems = yesOrNo[index ?? 0];
                     print('switched to: $printAllItems');
                     setUserPref();
                   },
@@ -136,16 +137,17 @@ class _UserSettingsState extends State<UserSettings> {
                   border: Border.all(color: Colors.blueAccent),
                 ),
                 child: ToggleSwitch(
+                  totalSwitches: 4,
                   initialLabelIndex: eastOrWest.indexOf(fontSelected),
                   minWidth: double.infinity,
                   cornerRadius: 0.0,
-                  activeBgColor: currentColor,
+                  activeBgColor: [currentColor],
                   activeFgColor: Colors.white,
                   inactiveBgColor: Colors.grey,
                   inactiveFgColor: Colors.black,
                   labels: ['West', '繁體', '中英', '日英'],
                   onToggle: (index) {
-                    fontSelected = eastOrWest[index];
+                    fontSelected = eastOrWest[index ?? 0];
                     print('switched to: $fontSelected');
                     setUserPref();
                   },
@@ -272,16 +274,17 @@ class _UserSettingsState extends State<UserSettings> {
                   border: Border.all(color: Colors.blueAccent),
                 ),
                 child: ToggleSwitch(
+                  totalSwitches: 2,
                   initialLabelIndex: blackOrRed.indexOf(printTextColor),
                   minWidth: double.infinity,
                   cornerRadius: 0.0,
-                  activeBgColor: currentColor,
+                  activeBgColor: [currentColor],
                   activeFgColor: Colors.white,
                   inactiveBgColor: Colors.grey,
                   inactiveFgColor: Colors.black,
                   labels: ['BLACK', 'RED'],
                   onToggle: (index) {
-                    printTextColor = blackOrRed[index];
+                    printTextColor = blackOrRed[index ?? 0];
                     print('switched to: $printTextColor');
                     setUserPref(); // added to support color red, i.e. DK-2251
                   },
@@ -311,8 +314,8 @@ void setUserColor() async {
 
 void setUserMargins() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setDouble('left', left);
-  await prefs.setDouble('top', top);
-  await prefs.setDouble('right', right);
-  await prefs.setDouble('bottom', bottom);
+  await prefs.setDouble('left', left ?? 0);
+  await prefs.setDouble('top', top ?? 0);
+  await prefs.setDouble('right', right ?? 0);
+  await prefs.setDouble('bottom', bottom ?? 0);
 }

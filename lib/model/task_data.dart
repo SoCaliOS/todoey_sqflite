@@ -16,7 +16,7 @@ String colorCode = '';
 Color currentColor = Color(0xff3f7eb5);
 String printAllItems = '';
 String printTextColor = '';
-double left, top, right, bottom;
+double? left, top, right, bottom;
 String fontSelected = '';
 
 class TaskData extends ChangeNotifier {
@@ -78,6 +78,7 @@ class TaskData extends ChangeNotifier {
     }
 
     notifyListeners();
+    return tasksDatabase;
   }
 
   Future<void> insertDatabaseItem(TaskItem taskItem) async {
@@ -120,7 +121,7 @@ class TaskData extends ChangeNotifier {
   Future getUserColor() async {
     SharedPreferences prefsNew = await SharedPreferences.getInstance();
     try {
-      currentColor = Color(prefsNew.getInt('color'));
+      currentColor = Color(prefsNew.getInt('color') ?? 0xff3f7eb5);
     } catch (e) {
       currentColor = Color(0xff3f7eb5);
     }
